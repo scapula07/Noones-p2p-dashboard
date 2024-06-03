@@ -49,28 +49,23 @@ function App() {
   const userNoone = localStorage.getItem("noone");
      useEffect( ()=>{ 
         if(JSON.parse(userNoone)?.id?.length >0){
-          const unsub = onSnapshot(doc(db,"users",JSON.parse(userNoone)?.id), (doc) => {
-            
-            setUser({...doc.data(),id:doc?.id})
-            if(doc?.id?.length !=undefined){
-             
-               getAccessToken()
-            
-            }else{
-                localStorage.clear();
+              const unsub = onSnapshot(doc(db,"users",JSON.parse(userNoone)?.id), (doc) => {
+                
+                setUser({...doc.data(),id:doc?.id})
+                if(doc?.id?.length !=undefined){
+                
+                  getAccessToken()
+                
+                }else{
+                    localStorage.clear();
 
-               
-                toast.error("You are not signed up",{duration:3000})
-                navigate("/")
-            }
+                  
+                    toast.error("You are not signed up",{duration:3000})
+                    navigate("/")
+                }
 
-          });
-
-        
-          }else{
-            const userLogged = localStorage.getItem("noone");
-            setUser(JSON.parse(userLogged ))
-          }
+              });
+         }
 
     },[userNoone])
 
@@ -111,18 +106,18 @@ function App() {
     <>
                <Routes>
                      <Route exact path="/"  element={<Auth/>} />
-                     {user?.id?.length !=undefined?
+                       {user?.id?.length !=undefined?
                              <Route exact path="/trades"  element={<TradeTable/>} />
                              :
                              <Route exact path="/"  element={<Auth/>} />
 
-                     }
-                      {user?.id?.length !=undefined?
-                          <Route exact path="/chat"  element={<Chat/>} />
+                          }
+                       {user?.id?.length !=undefined?
+                           <Route exact path="/chat"  element={<Chat/>} />
                               :
-                          <Route exact path="/"  element={<Auth/>} />
+                            <Route exact path="/"  element={<Auth/>} />
                           
-                      }
+                         }
                          {user?.id?.length !=undefined?
                             <Route exact path="/admin"  element={<Admin/>} />
                                     :
