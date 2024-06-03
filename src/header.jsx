@@ -110,7 +110,7 @@ export default function Header({}) {
 }
 
            </div>
-           {user?.role !="user"&&user?.id !=undefined&&
+           {user?.role !="user"&&user?.id !=0&&
 
            
            <Link to='/admin'>
