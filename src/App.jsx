@@ -111,9 +111,26 @@ function App() {
     <>
                <Routes>
                      <Route exact path="/"  element={<Auth/>} />
-                     <Route exact path="/trades"  element={<TradeTable/>} />
-                     <Route exact path="/chat"  element={<Chat/>} />
-                     <Route exact path="/admin"  element={<Admin/>} />
+                     {user?.id?.length !=undefined?
+                             <Route exact path="/trades"  element={<TradeTable/>} />
+                             :
+                             <Route exact path="/"  element={<Auth/>} />
+
+                     }
+                      {user?.id?.length !=undefined?
+                          <Route exact path="/chat"  element={<Chat/>} />
+                              :
+                          <Route exact path="/"  element={<Auth/>} />
+                          
+                      }
+                         {user?.id?.length !=undefined?
+                            <Route exact path="/admin"  element={<Admin/>} />
+                                    :
+                            <Route exact path="/"  element={<Auth/>} />
+
+                       }
+                   <Route exact path="*"  element={<Auth/>} />
+
               </Routes>
   
     </>
