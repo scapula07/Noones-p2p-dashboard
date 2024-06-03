@@ -21,7 +21,8 @@ import axios from 'axios';
 
 
 
-const baseUrl="http://localhost:3003"
+
+const baseUrl="https://noones-be-1.onrender.com"
 const firebaseConfig = {
   apiKey: "AIzaSyCIFa1gbo2BWLuHAo3Oozozyt5jK_UShVY",
   authDomain: "devspage-a55cf.firebaseapp.com",

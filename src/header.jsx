@@ -10,7 +10,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import { useRecoilState,useRecoilValue } from 'recoil';
-import { tokenState } from './recoil';
+import { tokenState,userState } from './recoil';
 import { MdDashboard } from "react-icons/md";
 import { Link } from 'react-router-dom';
 
@@ -28,7 +28,8 @@ const firebaseConfig = {
      const app = initializeApp(firebaseConfig);
      const auth =getAuth(app)
      const db=getFirestore()
-     const baseUrl="http://localhost:3003"
+
+     const baseUrl="https://noones-be-1.onrender.com"
 
 
 
@@ -38,6 +39,7 @@ export default function Header({}) {
 
      const [balance,setbalance]=useState(false)
      const token=useRecoilValue(tokenState)
+     const user=useRecoilValue(userState)
 
      const getActiveTrades=async()=>{
       
@@ -108,9 +110,13 @@ export default function Header({}) {
 }
 
            </div>
+           {user?.role !="user"&&
+
+           
            <Link to='/admin'>
            <MdDashboard className='text-3xl font-semibold text-yellow-600'/>
            </Link>
+}
       
            <Toaster />
     

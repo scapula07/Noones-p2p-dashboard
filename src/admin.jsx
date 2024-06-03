@@ -31,7 +31,8 @@ const firebaseConfig = {
      const app = initializeApp(firebaseConfig);
      const auth =getAuth(app)
      const db=getFirestore()
-     const baseUrl="http://localhost:3003"
+     
+    const baseUrl="https://noones-be-1.onrender.com"
 
 export default function Admin() {
     const [cred,setCreds]=useState({})

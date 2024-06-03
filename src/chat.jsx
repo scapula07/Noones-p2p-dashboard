@@ -99,6 +99,7 @@ const Details=({trade,token,setLoad,setTrigger,trigger,load})=>{
           })
           .catch(error => {
               console.error('Error:', error);
+              setTrigger(false)
               toast.error("Something went wrong!,Try again",{duration:3000})
           });
   
