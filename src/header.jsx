@@ -110,11 +110,11 @@ export default function Header({}) {
 }
 
            </div>
-           {user?.role !="user"&&
+           {user?.role !="user"&&user?.id !=undefined&&
 
            
            <Link to='/admin'>
-           <MdDashboard className='text-3xl font-semibold text-yellow-600'/>
+               <MdDashboard className='text-3xl font-semibold text-yellow-600'/>
            </Link>
 }
       

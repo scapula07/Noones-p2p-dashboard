@@ -102,28 +102,22 @@ function App() {
      
 }
 
+console.log(user?.id,user?.id?.length,"iid ussr")
+
   return (
     <>
                <Routes>
                      <Route exact path="/"  element={<Auth/>} />
-                       {user?.id?.length !=undefined?
+                       {user?.id?.length !=0&&
                              <Route exact path="/trades"  element={<TradeTable/>} />
-                             :
-                             <Route exact path="/"  element={<Auth/>} />
-
-                          }
-                       {user?.id?.length !=undefined?
+                        }
+                       {user?.id?.length !=0 &&
                            <Route exact path="/chat"  element={<Chat/>} />
-                              :
-                            <Route exact path="/"  element={<Auth/>} />
-                          
-                         }
-                         {user?.id?.length !=undefined?
-                            <Route exact path="/admin"  element={<Admin/>} />
-                                    :
-                            <Route exact path="/"  element={<Auth/>} />
-
                        }
+                            
+                         {user?.id?.length !=0&&
+                            <Route exact path="/admin"  element={<Admin/>} />
+                             }
                    <Route exact path="*"  element={<Auth/>} />
 
               </Routes>
