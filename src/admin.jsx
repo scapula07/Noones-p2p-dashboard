@@ -16,6 +16,8 @@ import { FaLongArrowAltLeft } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import { AiOutlineDelete } from "react-icons/ai";
 import Modal from './modal';
+import { IoIosArrowBack } from "react-icons/io";
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyCIFa1gbo2BWLuHAo3Oozozyt5jK_UShVY",
@@ -73,7 +75,11 @@ export default function Admin() {
                 <div className='w-4/5 space-y-10'>
                     <div className='flex justify-between w-full items-center'>
                                 <Link to="/trades">
-                                    <FaLongArrowAltLeft  className='text-4xl font-semibold hover:text-yellow-700' />
+                                <div className='flex items-center text-yellow-500 font-bold ' >
+                                      <IoIosArrowBack onClick={()=>setTrigger(false)} />
+                                      <h5 onClick={()=>setTrigger(false)}>Back</h5>
+
+                                    </div>
                                 </Link>
 
                                 
@@ -82,8 +88,9 @@ export default function Admin() {
 
                     </div>
 
-                    <div className='w-full'>
+                    <div className='w-full flex flex-col space-y-10'>
                         <Users />
+                        <Transactions />
 
                     </div>
 
@@ -121,6 +128,14 @@ export default function Admin() {
 
 
                               }
+
+
+                 <div className='flex items-center text-yellow-500 font-bold text-xs' >
+                      <IoIosArrowBack onClick={()=>setTrigger(false)} />
+                      <h5 onClick={()=>setTrigger(false)}>Back</h5>
+
+                    </div>
+
                              
                                                 
 
@@ -268,3 +283,139 @@ const Users=()=>{
       )
   }
   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const Transactions=()=>{
+  const [transactions,setTx]=useState([])
+
+
+
+  useEffect(()=>{
+  
+      const q = query(collection(db, "transactions"),orderBy("createdAt","desc"));
+          const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const products = []
+            querySnapshot.forEach((doc) => {
+              products.push({ ...doc.data(), id: doc.id })
+  
+            });
+  
+      
+            setTx(products)
+      });
+  
+  },[])
+
+  console.log(transactions,"txxxx")
+    return(
+      <>
+      <div className='space-y-5'>
+                <h5 className='px-8 ' >Transactions({transactions?.length})</h5>
+
+                <div>
+        <table class="table-auto w-full border-separate-4 border-spacing-2">
+                <thead className='py-2 bg-yellow-100'>
+                <tr >
+                      {
+                        ["User",
+                          "Trade Hash",
+                          "Amount",
+                          "Date"
+                      
+
+                        ].map((text)=>{
+                            return(
+                            <th className='py-3 text-sm text-slate-800 text-center'>{text}</th>
+                        )
+                        })
+                    }
+                         </tr>
+                    
+                </thead>
+
+                <tbody className='w-full '>
+                    
+                    {transactions?.map((tx,index)=>{
+                         
+                          return(
+                          
+                              <TxRow
+                                 tx={tx}
+                              
+                              />
+                              
+
+                          )
+                      })
+
+                    } 
+                 
+
+
+                </tbody>
+
+        </table>
+
+            </div>
+
+      </div>
+
+
+
+
+      </>
+    )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+const TxRow=({tx})=>{
+    const milliseconds = tx?.createdAt.seconds * 1000 + tx?.createdAt.nanoseconds / 1000000;
+
+    // Create a new Date object using the milliseconds
+    const date = new Date(milliseconds);
+    
+    // Format the date to a readable string
+    const readableDate = date.toLocaleString();
+
+    return(
+      <tr className={'border-b py-3 bg-green-100'} >
+        
+           <td className='text-sm font-light text-slate-500 text-center py-6'>{tx?.user}</td>
+
+           <td className='text-sm font-light text-slate-500 text-center py-6'>{tx?.trade_hash}</td>
+           <td className='text-sm font-light text-slate-500 text-center py-6' >
+            {tx?.fiat_currency_code} {tx?.fiat_amount_requested}
+              
+           </td>
+           <td className='text-sm font-light text-slate-500 text-center py-6' >
+            {readableDate}
+              
+           </td>
+        
+       </tr>
+
+    )
+}

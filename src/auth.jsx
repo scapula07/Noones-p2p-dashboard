@@ -9,8 +9,10 @@ import {  onAuthStateChanged } from "firebase/auth";
 import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
-import { tokenState } from './recoil';
+import { tokenState ,userState} from './recoil';
 import { useRecoilState } from 'recoil';
+import { MdOutlineRefresh } from "react-icons/md";
+import { IoIosArrowBack } from "react-icons/io";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCIFa1gbo2BWLuHAo3Oozozyt5jK_UShVY",
@@ -32,6 +34,12 @@ export default function Auth() {
     const [cred,setCreds]=useState({})
     const [load,setLoad]=useState(false)
     const [token,setToken]=useRecoilState(tokenState)
+    const [otp,setOtp]=useState()
+    const [pin,setPin]=useState("")
+    const [trigger,setTrigger]=useState(false)
+    const [user,setUser]=useState({})
+
+
     let navigate = useNavigate();
 
     const getAccessToken=async()=>{
@@ -76,12 +84,12 @@ const login=async()=>{
       const ref =doc(db,"users",response?.user?.uid)
       const docSnap = await getDoc(ref);
       if (docSnap.exists()) {
-               getAccessToken()
-            //    toast.dismiss();
-               localStorage.clear();
-               localStorage.setItem('noone',JSON.stringify(docSnap.data()));
-               setLoad(false)
-               navigate(`/trades`)
+              setUser({...docSnap.data(),id:docSnap?.id})
+              const otp = Math.floor(10000 + Math.random() * 90000);
+              console.log(otp)
+              setOtp(otp)
+              setTrigger(true)
+            
 
           } else {
             // setTrigger("not_triggered")
@@ -103,10 +111,48 @@ const login=async()=>{
 }
 
 
+const submit=async()=>{
+
+  setLoad(true)
+try{
+  if (otp===Number(pin)) {
+     
+         getAccessToken()
+         localStorage.clear();
+         localStorage.setItem('noone',JSON.stringify(user));
+         setLoad(false)
+         navigate(`/trades`)
+
+    } else {
+      setLoad(false)
+      setPin("")
+      throw new Error("Wrong pin,Refresh")
+    
+        
+    }
+
+
+ }catch(e){
+     setLoad(false)
+    console.log(e)
+    toast.error(e?.message,{duration:3000});
+}
+setLoad(false)
+
+
+}
+
+
+
+
   return (
     <div className='w-full h-screen flex justify-center items-center'>
+
+             {!trigger?
+
+             
               
-              <div className=' space-y-8 w-1/3 flex flex-col items-center py-8 '>
+               <div className=' space-y-8 w-1/3 flex flex-col items-center py-8 '>
                                  <h5 className='font-semibold'>Dashboard</h5>
 
                               <div className='flex flex-col space-y-4 w-full px-4'>
@@ -135,16 +181,50 @@ const login=async()=>{
                                }
                           
                              
-                                               
+                     </div>
+                      :
 
-                                 
+                 <div className=' space-y-8 w-1/6 flex flex-col items-center py-8 '>
+                      <h5 className='font-semibold text-sm'>OTP was sent to your email</h5>
+
+                   <div className='flex flex-col space-y-4 w-full px-4'>
+                         <input 
+                           placeholder='Enter 4 digits code'
+                           className='rounded-lg border w-full py-2 text-sm px-2'
+                           value={pin}
+                           onChange={(e)=>setPin(e.target.value)}
+                         />
+                        
+
+                   </div>
+                  
+                               
+                    {load?
+                      <ClipLoader color='brown' size={10}/>
+                      :
+                      <button className='bg-yellow-400 text-sm py-2 px-10 rounded-sm w-full'   onClick={submit}>
+                         Submit
+                       </button>
+
+                    }
+
+                    <div className='flex items-center space-x-0.5 hover:text-yellow-500'>
+                          <MdOutlineRefresh className='text-lg font-semibold'/>
+                          <h5 className='text-sm font-semibold'>Regenerate</h5>
+                       
+                    </div>
+                    <div className='flex items-center text-yellow-500 font-bold text-xs' >
+                       <IoIosArrowBack onClick={()=>setTrigger(false)} />
+                       <h5 onClick={()=>setTrigger(false)}>Back</h5>
+
+                    </div>
 
 
-                              
+               
+                  
+               </div>
 
-
-        
-             </div>
+                              }
 
              <Toaster />
 

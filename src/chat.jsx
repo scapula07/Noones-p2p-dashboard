@@ -1,24 +1,64 @@
 import React,{useState,useEffect,useRef} from 'react'
 import Header from './header'
 import { useRecoilState } from 'recoil';
-import { tokenState } from './recoil';
+import { tokenState ,userState} from './recoil';
 import { Link,useNavigate,useLocation } from 'react-router-dom';
 import axios from 'axios'
 import toast, { Toaster } from 'react-hot-toast';
 import { ClipLoader } from 'react-spinners';
 import { IoMdDownload } from "react-icons/io";
 import Modal from './modal';
+import { MdOutlineRefresh } from "react-icons/md";
+import { IoIosArrowBack } from "react-icons/io";
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import {getFirestore} from "firebase/firestore"
+import { getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword ,signOut} from "firebase/auth";
+import { doc,getDoc,setDoc,updateDoc,deleteDoc,collection,addDoc,query,onSnapshot,where,orderBy }  from "firebase/firestore";
+import {  onAuthStateChanged } from "firebase/auth";
+
 
     const baseUrl="https://noones-be-1.onrender.com"
 
+    const firebaseConfig = {
+      apiKey: "AIzaSyCIFa1gbo2BWLuHAo3Oozozyt5jK_UShVY",
+      authDomain: "devspage-a55cf.firebaseapp.com",
+      projectId: "devspage-a55cf",
+      storageBucket: "devspage-a55cf.appspot.com",
+      messagingSenderId: "91329266555",
+      appId: "1:91329266555:web:72941933425ad1b71ef3de",
+      measurementId: "G-C2NVHD34Y1"
+    };
+    
+    
+       const app = initializeApp(firebaseConfig);
+       const auth =getAuth(app)
+       const db=getFirestore()
 export default function Chat() {
     const [token,setToken]=useRecoilState(tokenState)
     const location =useLocation()
     const [trigger, setTrigger] = useState(false)
     const [load, setLoad] = useState(false)
+    
 
     const trade=location?.state
     console.log(location,"trdade")
+
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCIFa1gbo2BWLuHAo3Oozozyt5jK_UShVY",
+        authDomain: "devspage-a55cf.firebaseapp.com",
+        projectId: "devspage-a55cf",
+        storageBucket: "devspage-a55cf.appspot.com",
+        messagingSenderId: "91329266555",
+        appId: "1:91329266555:web:72941933425ad1b71ef3de",
+        measurementId: "G-C2NVHD34Y1"
+      };
+      
+      
+        const app = initializeApp(firebaseConfig);
+        const auth =getAuth(app)
+        const db=getFirestore()
   return (
     <>
     
@@ -65,53 +105,87 @@ export default function Chat() {
 
 
 const Details=({trade,token,setLoad,setTrigger,trigger,load})=>{
+  const [isTrigger, setisTrigger] = useState(false)
+  const [pin, setPin] = useState("")
+  const [otp, setOtp] = useState()
+  const [user,setUser]=useRecoilState(userState)
+
+  let navigate = useNavigate();
 
      
     const release=async()=>{
-        setLoad(true)
+        
         if(trade?.trade_status != "Paid"){
-            toast.error('Trade is not marked as paid',{duration:3000});
+             toast.error('Trade is not marked as paid',{duration:3000});
     
-            return
+              return
     
         }
 
-
-     
-  
-      try{
-        axios.post(`${baseUrl}/api/v1/release`,{
-          token:token,
-          hash:trade?.trade_hash,
-  
-          },{
-          headers: {
-              'Content-Type': 'application/json'
-            }
-          })
-          .then(response => {
-              
-              console.log('Trades:', response.data?.data?.status);
-              setTrigger(false)
-             
-              toast.success('Crypto has been released!',{duration:3000});
-            
-          })
-          .catch(error => {
-              console.error('Error:', error);
-              setTrigger(false)
-              toast.error("Something went wrong!,Try again",{duration:3000})
-          });
-  
-      }catch(e){
-        console.log(e)
-      }
+        const otp = Math.floor(10000 + Math.random() * 90000);
+        console.log(otp)
+        setOtp(otp)
+        setisTrigger(true)
   }
   
   
+  const submit=async()=>{
+
+              setLoad(true)
+            try{
+              if (otp===Number(pin)) {
+                
+                      axios.post(`${baseUrl}/api/v1/release`,{
+                        token:token,
+                        hash:trade?.trade_hash,
+
+                        },{
+                        headers: {
+                            'Content-Type': 'application/json'
+                          }
+                        })
+                        .then(async(response )=> {
+                            
+                            console.log('Trades:', response.data?.data?.status);
+                            await addDoc(collection(db, "transactions"),{
+           
+                              createdAt:new Date(),
+                              ...trade,
+                              user:user?.email
+                              
+                            })
+                            setTrigger(false)
+                            toast.success('Crypto has been released!',{duration:3000});
+
+                            navigate("/trades")
+                            
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            setTrigger(false)
+                            toast.error("Something went wrong!,Try again",{duration:3000})
+                        });
+            
+                } else {
+                  setLoad(false)
+                  setPin("")
+                  throw new Error("Wrong pin,Refresh")
+                
+                    
+                }
+            
+            
+            }catch(e){
+                setLoad(false)
+                console.log(e)
+                toast.error(e?.message,{duration:3000});
+            }
+            setLoad(false)
+  }
   
   
-  
+
+
   
      return(
         <>
@@ -131,23 +205,72 @@ const Details=({trade,token,setLoad,setTrigger,trigger,load})=>{
   
         </div>
             <Modal trigger={trigger}  cname="w-1/5 py-2  bg-white  px-4 rounded-lg py-8 ">
+
+
+              {!isTrigger ?
+
+
+              
                         
-            <div className='  w-full flex  flex-col space-y-4 items-center'>
-                <h5 className='font-semibold text-red-600 text-xl'>Are you sure?</h5>
-                 <div className='flex items-center  space-x-4'>
-                 <button className='border border-red-600 text-slate rounded-lg text-xs font-semibold px-4 py-1' onClick={()=>setTrigger(false)}>Cancel</button>
-                  {load?
-                    <ClipLoader color='brown' size={10}/>
-                    :
-                    <button className='bg-yellow-100 text-slate rounded-lg text-xs font-semibold px-4 py-1' onClick={release} >Contine</button>
+                <div className='  w-full flex  flex-col space-y-4 items-center'>
+                    <h5 className='font-semibold text-red-600 text-xl'>Are you sure?</h5>
+                    <div className='flex items-center  space-x-4'>
+                    <button className='border border-red-600 text-slate rounded-lg text-xs font-semibold px-4 py-1' onClick={()=>setTrigger(false)}>Cancel</button>
+                      {load?
+                        <ClipLoader color='brown' size={10}/>
+                        :
+                        <button className='bg-yellow-100 text-slate rounded-lg text-xs font-semibold px-4 py-1' onClick={release} >Contine</button>
 
 
-                  }
-                 
-                 </div>
-                 
+                      }
+                    
+                    </div>
+                    
 
-             </div>
+                </div>
+
+                :
+              
+                <div className=' space-y-8 w-full flex flex-col items-center py-4'>
+                     <h5 className='font-semibold text-sm'>OTP was sent to your email</h5>
+
+                    <div className='flex flex-col space-y-4 w-full px-4'>
+                          <input 
+                            placeholder='Enter 4 digits code'
+                            className='rounded-lg border w-full py-2 text-sm px-2'
+                            value={pin}
+                            onChange={(e)=>setPin(e.target.value)}
+                          />
+                          
+
+                    </div>
+            
+                         
+                    {load?
+                      <ClipLoader color='brown' size={10}/>
+                      :
+                      <button className='bg-yellow-400 text-sm py-2 px-10 rounded-sm w-full'   onClick={submit}>
+                        Submit
+                      </button>
+
+                    }
+
+                    <div className='flex items-center space-x-0.5 hover:text-yellow-500'>
+                          <MdOutlineRefresh className='text-lg font-semibold'/>
+                          <h5 className='text-sm font-semibold'>Regenerate</h5>
+                      
+                    </div>
+                    <div className='flex items-center text-yellow-500 font-bold text-xs' >
+                      <IoIosArrowBack onClick={()=>setisTrigger(false)} />
+                      <h5 onClick={()=>setisTrigger(false)}>Back</h5>
+
+                    </div>
+
+
+              
+                  
+              </div>
+          }
     
 </Modal>
 </>
